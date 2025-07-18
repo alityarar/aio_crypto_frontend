@@ -7,13 +7,16 @@ import MarketSell from '../components/MarketSell';
 import LimitBuy from '../components/LimitBuy';
 import LimitSell from '../components/LimitSell';
 import Portfolio from '../components/Portfolio';
+import LoginScreen from '../components/LoginScreen';
+
 
 const Stack = createNativeStackNavigator();
 
 
 export default function AppNavigator() {
   return (
-    <Stack.Navigator initialRouteName="HomePage" screenOptions={{ headerShown: false }}>
+    <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="HomePage" component={HomePage} />
       <Stack.Screen name="Alerts" component={Alerts} />
       <Stack.Screen name="MarketBuy" component={MarketBuy} />

@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, Text, ScrollView, TouchableOpacity, Dimensions, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { PieChart } from 'react-native-chart-kit';
 import { LinearGradient } from 'expo-linear-gradient';
+import API_BASE_URL from '../constants/api';
+
 
 const screenWidth = Dimensions.get('window').width;
 
-// Mock holdings data - replace with real data when available
-const mockHoldingsByExchange = {
-  Binance: { BTC: 1, ETH: 2 },
-  BTCTurk: { BTC: 2, ETH: 2 },
-  Kucoin: { BTC: 3, ETH: 2 },
-  Coinbase: { BTC: 1, ETH: 2 }
-};
+
+
 
 // Default pie chart data, will be updated with real data
 const initialPieData = [
@@ -25,6 +23,7 @@ const initialPieData = [
 
 const Portfolio = () => {
   const navigation = useNavigation();
+  const [userHoldings, setUserHoldings] = useState({});  // 👈 burada olmalı
   const [pieData, setPieData] = useState(initialPieData);
   const [prices, setPrices] = useState({ Binance: {}, BTCTurk: {}, Kucoin: {}, Coinbase: {} });
   const [total, setTotal] = useState(0);
@@ -32,6 +31,8 @@ const Portfolio = () => {
   const [error, setError] = useState(null);
   const [exchangeRate, setExchangeRate] = useState(30); // Default USD/TRY rate
 
+
+  
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -68,7 +69,7 @@ const Portfolio = () => {
       const exchangeTotals = { Binance: 0, BTCTurk: 0, Kucoin: 0, Coinbase: 0 };
 
       // Process holdings data for each exchange and coin
-      Object.entries(mockHoldingsByExchange).forEach(([exchange, coins]) => {
+      Object.entries(userHoldings).forEach(([exchange, coins]) => {
         Object.entries(coins).forEach(([coin, amount]) => {
           try {
             switch (exchange) {
@@ -250,6 +251,37 @@ const Portfolio = () => {
   const formatPercent = (value) => {
     return `${value > 0 ? '+' : ''}${value.toFixed(2)}%`;
   };
+  useEffect(() => {
+  const fetchUserHoldings = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/portfolio`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch portfolio data');
+      }
+
+      const data = await response.json();
+      console.log('Fetched portfolio:', data);
+      setUserHoldings(data);
+    } catch (err) {
+      console.error('Portfolio fetch error:', err.message);
+      setError(err.message);
+    }
+  };
+
+  fetchUserHoldings();
+}, []);
+
 
   // Fetch data on component mount and every 30s after
   useEffect(() => {
@@ -260,7 +292,7 @@ const Portfolio = () => {
 
   // Render holdings for an exchange
   const renderExchange = (name) => {
-    const holdings = mockHoldingsByExchange[name];
+    const holdings = userHoldings[name];
     const priceData = prices[name];
     
     if (!holdings || !priceData) return null;
