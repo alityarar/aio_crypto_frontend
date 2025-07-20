@@ -272,7 +272,7 @@ const Portfolio = () => {
 
       const data = await response.json();
       console.log('Fetched portfolio:', data);
-      setUserHoldings(data);
+      setUserHoldings(data.holdings || data);
     } catch (err) {
       console.error('Portfolio fetch error:', err.message);
       setError(err.message);

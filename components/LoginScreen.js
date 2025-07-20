@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { login } from '../services/auth'; // 👈 yeni ekledik
 
 const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@example.com');
+  const [password, setPassword] = useState('admin123');
 
   const handleLogin = async () => {
-    // Gerçek API yerine sahte token veriyoruz (şimdilik)
     try {
-      await AsyncStorage.setItem('token', 'mocked-token-123');
-      navigation.replace('HomePage');
+      const data = await login(email, password); // API çağrısı
+      await AsyncStorage.setItem('token', data.token); // Token’ı sakla
+      navigation.replace('HomePage'); // Anasayfaya yönlendir
     } catch (err) {
-      console.error('Login error:', err);
+      Alert.alert('Hata', err.message || 'Giriş sırasında bir hata oluştu');
     }
   };
 
