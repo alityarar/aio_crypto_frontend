@@ -10,6 +10,7 @@ const LoginScreen = ({ navigation }) => {
   const handleLogin = async () => {
     try {
       const data = await login(email, password); // API çağrısı
+        console.log("🔑 Giriş başarılı. Backend'den gelen kullanıcı ID:", data.user.id); // 👈 Burası önemli
       await AsyncStorage.setItem('token', data.token); // Token’ı sakla
       navigation.replace('HomePage'); // Anasayfaya yönlendir
     } catch (err) {
